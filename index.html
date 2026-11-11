@@ -40,18 +40,22 @@ input[type=number],input[type=date]{border:1px solid var(--line);border-radius:1
 <section id="today">
 <div class="card">
 <div class="date" id="todayDate"></div>
-<h2>오늘 어떤 운동을 했나요?</h2>
+<h2>어느 날짜의 운동을 기록할까요?</h2>
+<label for="workoutDate">운동한 날짜</label>
+<input id="workoutDate" type="date">
+<div class="muted" style="margin-top:7px">오늘뿐 아니라 지난 날짜도 선택해서 기록할 수 있어요. 미래 날짜는 선택할 수 없어요.</div>
+<h2 style="margin-top:18px">어떤 운동을 했나요?</h2>
 <div class="grid" id="exerciseGrid"></div>
 <label>운동 시간</label>
 <div class="minutes" id="quickMinutes">
 <button class="minbtn" data-min="5">5분</button><button class="minbtn active" data-min="10">10분</button><button class="minbtn" data-min="15">15분</button><button class="minbtn" data-min="20">20분</button><button class="minbtn" data-min="30">30분</button>
 </div>
 <label for="customMin">직접 입력 (분)</label><input id="customMin" type="number" min="1" max="300" placeholder="예: 12">
-<button class="primary" id="saveBtn">오늘 운동 기록 저장하기</button>
+<button class="primary" id="saveBtn">선택한 날짜 운동 기록 저장하기</button>
 <div class="muted" style="margin-top:9px">운동을 여러 번 했다면 각각 선택해서 저장해 주세요.</div>
 </div>
-<div class="card"><h2>☑️ 오늘의 운동 체크</h2><div id="todayChecklist"></div></div>
-<div class="card"><h2>오늘의 기록</h2><div id="todayEntries"></div></div>
+<div class="card"><h2 id="checkTitle">☑️ 선택한 날짜의 운동 체크</h2><div id="todayChecklist"></div></div>
+<div class="card"><h2 id="entriesTitle">선택한 날짜의 기록</h2><div id="todayEntries"></div></div>
 </section>
 <section id="calendar" class="hidden">
 <div class="card">
@@ -70,16 +74,19 @@ input[type=number],input[type=date]{border:1px solid var(--line);border-radius:1
 </div>
 <script>
 const EX=[["cycle","🚴","싸이클"],["stepper","🏃","스테퍼"],["arms","💪","홈트 팔"],["belly","🔥","홈트 뱃살"],["stretch","🧘","홈트 스트레칭"],["cardio","❤️","홈트 유산소"],["other","✨","기타"]];
-const KEY="ming-workout-v1";let logs=JSON.parse(localStorage.getItem(KEY)||"[]"),chosen=null,mins=10,calDate=new Date(),selectedDate=iso(new Date());
+const KEY="ming-workout-v1";let logs=JSON.parse(localStorage.getItem(KEY)||"[]"),chosen=null,mins=10,calDate=new Date(),selectedDate=iso(new Date()),workoutDate=iso(new Date());
 function iso(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
+function parseLocalDate(s){const [y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d)}
 function fmt(d){return new Intl.DateTimeFormat("ko-KR",{year:"numeric",month:"long",day:"numeric",weekday:"long"}).format(d)}
 function save(){localStorage.setItem(KEY,JSON.stringify(logs))}
-function todayLogs(){return logs.filter(x=>x.date===iso(new Date()))}
+function dateLogs(){return logs.filter(x=>x.date===workoutDate)}
 function renderGrid(){document.getElementById("exerciseGrid").innerHTML=EX.map(([id,ic,n])=>`<button class="exercise ${chosen===id?"selected":""}" data-id="${id}"><span class="ico">${ic}</span><span class="name">${n}</span></button>`).join("");document.querySelectorAll(".exercise").forEach(b=>b.onclick=()=>{chosen=b.dataset.id;renderGrid()})}
-function renderToday(){let d=new Date();document.getElementById("todayDate").textContent=fmt(d);let tl=todayLogs();document.getElementById("todayChecklist").innerHTML=EX.map(([id,ic,n])=>`<div class="entry"><span>${ic} ${n}</span><b>${tl.some(x=>x.type===id)?"✅ 완료":"○ 미기록"}</b></div>`).join("");document.getElementById("todayEntries").innerHTML=tl.length?tl.map(x=>`<div class="entry"><span>${EX.find(e=>e[0]===x.type)?.[1]} ${EX.find(e=>e[0]===x.type)?.[2]}</span><b>${x.minutes}분 <button class="secondary" style="padding:4px 8px;margin-left:5px" data-del="${x.id}">삭제</button></b></div>`).join(""):'<div class="empty">아직 기록이 없어요. 짧은 운동도 남겨보세요!</div>';document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{logs=logs.filter(x=>x.id!==b.dataset.del);save();renderAll()})}
+function renderToday(){let d=parseLocalDate(workoutDate);document.getElementById("todayDate").textContent="선택한 기록 날짜: "+fmt(d);let tl=dateLogs();document.getElementById("todayChecklist").innerHTML=EX.map(([id,ic,n])=>`<div class="entry"><span>${ic} ${n}</span><b>${tl.some(x=>x.type===id)?"✅ 완료":"○ 미기록"}</b></div>`).join("");document.getElementById("todayEntries").innerHTML=tl.length?tl.map(x=>`<div class="entry"><span>${EX.find(e=>e[0]===x.type)?.[1]} ${EX.find(e=>e[0]===x.type)?.[2]}</span><b>${x.minutes}분 <button class="secondary" style="padding:4px 8px;margin-left:5px" data-del="${x.id}">삭제</button></b></div>`).join(""):'<div class="empty">선택한 날짜에는 아직 기록이 없어요.</div>';document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{logs=logs.filter(x=>x.id!==b.dataset.del);save();renderAll()})}
+document.getElementById("workoutDate").value=workoutDate;document.getElementById("workoutDate").max=iso(new Date());
+document.getElementById("workoutDate").onchange=e=>{const v=e.target.value,today=iso(new Date());if(v>today){alert("미래 날짜는 선택할 수 없어요.");e.target.value=workoutDate;return}if(v){workoutDate=v;renderToday()}};
 document.querySelectorAll(".minbtn").forEach(b=>b.onclick=()=>{mins=+b.dataset.min;document.getElementById("customMin").value="";document.querySelectorAll(".minbtn").forEach(x=>x.classList.toggle("active",x===b))});
 document.getElementById("customMin").oninput=()=>document.querySelectorAll(".minbtn").forEach(x=>x.classList.remove("active"));
-document.getElementById("saveBtn").onclick=()=>{if(!chosen){alert("먼저 운동 아이콘을 선택해 주세요.");return}let custom=+document.getElementById("customMin").value;let m=custom||mins;if(!Number.isFinite(m)||m<1||m>300){alert("운동 시간은 1~300분으로 입력해 주세요.");return}logs.push({id:Date.now().toString(),date:iso(new Date()),type:chosen,minutes:m});save();chosen=null;document.getElementById("customMin").value="";renderGrid();renderAll();alert("운동 기록을 저장했어요! 잘했어요 🩵")};
+document.getElementById("saveBtn").onclick=()=>{if(!chosen){alert("먼저 운동 아이콘을 선택해 주세요.");return}let custom=+document.getElementById("customMin").value;let m=custom||mins;if(!Number.isFinite(m)||m<1||m>300){alert("운동 시간은 1~300분으로 입력해 주세요.");return}logs.push({id:Date.now().toString(),date:workoutDate,type:chosen,minutes:m});save();chosen=null;document.getElementById("customMin").value="";renderGrid();renderAll();alert("운동 기록을 저장했어요! 잘했어요 🩵")};
 function renderCalendar(){let y=calDate.getFullYear(),m=calDate.getMonth();document.getElementById("monthTitle").textContent=`${y}년 ${m+1}월`;let first=new Date(y,m,1),start=first.getDay(),days=new Date(y,m+1,0).getDate();let html=["일","월","화","수","목","금","토"].map(x=>`<div class="dow">${x}</div>`).join("");for(let i=0;i<start;i++)html+='<div></div>';for(let d=1;d<=days;d++){let key=iso(new Date(y,m,d)),items=logs.filter(x=>x.date===key),isToday=key===iso(new Date());html+=`<button class="day ${items.length?"has":""} ${isToday?"today":""}" data-day="${key}">${d}${items.length?`<small>${items.reduce((a,x)=>a+x.minutes,0)}분</small>`:""}</button>`}document.getElementById("calendarGrid").innerHTML=html;document.querySelectorAll("[data-day]").forEach(b=>b.onclick=()=>{selectedDate=b.dataset.day;renderSelected()});renderSelected()}
 function renderSelected(){document.getElementById("selectedDateTitle").textContent=selectedDate+" 기록";let items=logs.filter(x=>x.date===selectedDate);document.getElementById("selectedEntries").className=items.length?"":"empty";document.getElementById("selectedEntries").innerHTML=items.length?items.map(x=>{let e=EX.find(z=>z[0]===x.type);return `<div class="entry"><span>${e[1]} ${e[2]}</span><b>${x.minutes}분</b></div>`}).join(""):"기록이 없어요."}
 function renderStats(){let now=new Date(),prefix=iso(new Date(now.getFullYear(),now.getMonth(),1)).slice(0,7),ml=logs.filter(x=>x.date.startsWith(prefix)),sum=a=>a.reduce((s,x)=>s+x.minutes,0);document.getElementById("monthMinutes").textContent=sum(ml)+"분";document.getElementById("monthDays").textContent=new Set(ml.map(x=>x.date)).size+"일";document.getElementById("monthCount").textContent=ml.length+"회";document.getElementById("allMinutes").textContent=sum(logs)+"분";document.getElementById("typeStats").innerHTML=EX.map(([id,ic,n])=>{let a=ml.filter(x=>x.type===id);return `<div class="entry"><span>${ic} ${n}</span><b>${a.reduce((s,x)=>s+x.minutes,0)}분 · ${a.length}회</b></div>`}).join("")}
