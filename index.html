@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#edf5f0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="짬짬이 운동">
+<link rel="manifest" href="manifest.webmanifest">
+<title>밍이의 짬짬이 운동</title>
+<style>
+:root{--bg:#f4f7f3;--card:#fff;--ink:#263b35;--muted:#77857f;--green:#477568;--pale:#e7f1eb;--line:#e7ece8;--accent:#d9ebe2}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif}
+.wrap{max-width:560px;margin:auto;padding:env(safe-area-inset-top) 16px calc(28px + env(safe-area-inset-bottom))}
+header{padding:22px 4px 16px} h1{font-size:24px;margin:0 0 6px;letter-spacing:-.7px} .sub{font-size:13px;color:var(--muted)}
+.tabs{display:flex;gap:8px;margin:0 0 16px}.tab{flex:1;border:0;border-radius:14px;padding:12px 6px;background:#e9efeb;color:var(--green);font-weight:700;font-size:14px}.tab.active{background:var(--green);color:white}
+.card{background:var(--card);border-radius:20px;padding:18px;margin-bottom:14px;box-shadow:0 5px 18px #294d3a0b}
+h2{font-size:17px;margin:0 0 13px}.date{font-size:13px;color:var(--muted);margin-bottom:12px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.exercise{border:1.5px solid var(--line);border-radius:16px;background:#fff;padding:13px 5px 11px;min-height:92px;color:var(--ink)}.exercise .ico{display:block;font-size:27px;margin-bottom:5px}.exercise .name{font-size:12px;font-weight:700}.exercise.selected{border-color:var(--green);background:var(--pale);box-shadow:inset 0 0 0 1px var(--green)}
+label{font-size:13px;font-weight:700;display:block;margin:15px 0 8px}.minutes{display:flex;gap:7px;flex-wrap:wrap}.minbtn{border:1px solid var(--line);background:white;border-radius:12px;padding:10px 14px;font-weight:700;color:var(--green)}.minbtn.active{background:var(--green);color:white;border-color:var(--green)}
+input[type=number],input[type=date]{border:1px solid var(--line);border-radius:12px;padding:11px;font:inherit;width:100%;background:white;color:var(--ink)}
+.row{display:flex;gap:9px;align-items:center}.row>*{flex:1}
+.primary{width:100%;border:0;border-radius:14px;background:var(--green);color:white;font-size:15px;font-weight:800;padding:15px;margin-top:16px}
+.secondary{border:1px solid var(--line);border-radius:12px;background:white;color:var(--green);padding:10px 12px;font-weight:700}
+.entry{display:flex;justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid var(--line);font-size:14px}.entry:last-child{border:0}.muted{color:var(--muted);font-size:12px}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.stat{background:var(--pale);border-radius:15px;padding:13px}.stat b{font-size:22px;display:block;color:var(--green)}.stat span{font-size:12px;color:var(--muted)}
+.calendar-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;text-align:center}.dow,.day{padding:8px 0;font-size:12px}.dow{color:var(--muted);font-weight:700}.day{border-radius:11px;min-height:43px;background:#f8faf8}.day.today{outline:1.5px solid var(--green)}.day.has{background:var(--accent);font-weight:800;color:var(--green)}.day small{display:block;font-size:9px;font-weight:500;margin-top:2px}
+.hidden{display:none!important}.empty{text-align:center;color:var(--muted);font-size:13px;padding:16px 0}.footer{text-align:center;color:#91a098;font-size:11px;padding:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><h1>🌿 밍이의 짬짬이 운동</h1><div class="sub">조금씩 움직인 오늘을 차곡차곡 기록해요.</div></header>
+<nav class="tabs">
+<button class="tab active" data-tab="today">🏠 오늘</button>
+<button class="tab" data-tab="calendar">🗓️ 달력</button>
+<button class="tab" data-tab="stats">📊 통계</button>
+</nav>
+<section id="today">
+<div class="card">
+<div class="date" id="todayDate"></div>
+<h2>오늘 어떤 운동을 했나요?</h2>
+<div class="grid" id="exerciseGrid"></div>
+<label>운동 시간</label>
+<div class="minutes" id="quickMinutes">
+<button class="minbtn" data-min="5">5분</button><button class="minbtn active" data-min="10">10분</button><button class="minbtn" data-min="15">15분</button><button class="minbtn" data-min="20">20분</button><button class="minbtn" data-min="30">30분</button>
+</div>
+<label for="customMin">직접 입력 (분)</label><input id="customMin" type="number" min="1" max="300" placeholder="예: 12">
+<button class="primary" id="saveBtn">오늘 운동 기록 저장하기</button>
+<div class="muted" style="margin-top:9px">운동을 여러 번 했다면 각각 선택해서 저장해 주세요.</div>
+</div>
+<div class="card"><h2>☑️ 오늘의 운동 체크</h2><div id="todayChecklist"></div></div>
+<div class="card"><h2>오늘의 기록</h2><div id="todayEntries"></div></div>
+</section>
+<section id="calendar" class="hidden">
+<div class="card">
+<div class="calendar-head"><button class="secondary" id="prevMonth">‹ 이전</button><h2 id="monthTitle" style="margin:0"></h2><button class="secondary" id="nextMonth">다음 ›</button></div>
+<div class="calendar" id="calendarGrid"></div>
+<div class="muted" style="margin-top:10px">운동 기록이 있는 날은 연한 초록색으로 표시돼요.</div>
+</div>
+<div class="card"><h2 id="selectedDateTitle">날짜별 기록</h2><div id="selectedEntries" class="empty">달력에서 날짜를 선택해 주세요.</div></div>
+</section>
+<section id="stats" class="hidden">
+<div class="card"><h2>이번 달 한눈에 보기</h2><div class="stats"><div class="stat"><b id="monthMinutes">0분</b><span>총 운동 시간</span></div><div class="stat"><b id="monthDays">0일</b><span>운동한 날</span></div><div class="stat"><b id="monthCount">0회</b><span>운동 횟수</span></div><div class="stat"><b id="allMinutes">0분</b><span>누적 운동 시간</span></div></div></div>
+<div class="card"><h2>운동 종류별 이번 달 기록</h2><div id="typeStats"></div></div>
+<div class="card"><h2>데이터 백업</h2><div class="muted" style="margin-bottom:10px">기록은 현재 휴대폰 브라우저에 저장돼요. 기기를 바꾸거나 브라우저 데이터를 지우기 전에 백업해 주세요.</div><div class="row"><button class="secondary" id="exportBtn">기록 내보내기</button><label class="secondary" style="text-align:center;margin:0;cursor:pointer">백업 불러오기<input id="importFile" type="file" accept="application/json" hidden></label></div></div>
+</section>
+<div class="footer">오늘도 조금 움직였다, 참 잘했어요. 🩵</div>
+</div>
+<script>
+const EX=[["cycle","🚴","싸이클"],["stepper","🏃","스테퍼"],["arms","💪","홈트 팔"],["belly","🔥","홈트 뱃살"],["stretch","🧘","홈트 스트레칭"],["cardio","❤️","홈트 유산소"],["other","✨","기타"]];
+const KEY="ming-workout-v1";let logs=JSON.parse(localStorage.getItem(KEY)||"[]"),chosen=null,mins=10,calDate=new Date(),selectedDate=iso(new Date());
+function iso(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
+function fmt(d){return new Intl.DateTimeFormat("ko-KR",{year:"numeric",month:"long",day:"numeric",weekday:"long"}).format(d)}
+function save(){localStorage.setItem(KEY,JSON.stringify(logs))}
+function todayLogs(){return logs.filter(x=>x.date===iso(new Date()))}
+function renderGrid(){document.getElementById("exerciseGrid").innerHTML=EX.map(([id,ic,n])=>`<button class="exercise ${chosen===id?"selected":""}" data-id="${id}"><span class="ico">${ic}</span><span class="name">${n}</span></button>`).join("");document.querySelectorAll(".exercise").forEach(b=>b.onclick=()=>{chosen=b.dataset.id;renderGrid()})}
+function renderToday(){let d=new Date();document.getElementById("todayDate").textContent=fmt(d);let tl=todayLogs();document.getElementById("todayChecklist").innerHTML=EX.map(([id,ic,n])=>`<div class="entry"><span>${ic} ${n}</span><b>${tl.some(x=>x.type===id)?"✅ 완료":"○ 미기록"}</b></div>`).join("");document.getElementById("todayEntries").innerHTML=tl.length?tl.map(x=>`<div class="entry"><span>${EX.find(e=>e[0]===x.type)?.[1]} ${EX.find(e=>e[0]===x.type)?.[2]}</span><b>${x.minutes}분 <button class="secondary" style="padding:4px 8px;margin-left:5px" data-del="${x.id}">삭제</button></b></div>`).join(""):'<div class="empty">아직 기록이 없어요. 짧은 운동도 남겨보세요!</div>';document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{logs=logs.filter(x=>x.id!==b.dataset.del);save();renderAll()})}
+document.querySelectorAll(".minbtn").forEach(b=>b.onclick=()=>{mins=+b.dataset.min;document.getElementById("customMin").value="";document.querySelectorAll(".minbtn").forEach(x=>x.classList.toggle("active",x===b))});
+document.getElementById("customMin").oninput=()=>document.querySelectorAll(".minbtn").forEach(x=>x.classList.remove("active"));
+document.getElementById("saveBtn").onclick=()=>{if(!chosen){alert("먼저 운동 아이콘을 선택해 주세요.");return}let custom=+document.getElementById("customMin").value;let m=custom||mins;if(!Number.isFinite(m)||m<1||m>300){alert("운동 시간은 1~300분으로 입력해 주세요.");return}logs.push({id:Date.now().toString(),date:iso(new Date()),type:chosen,minutes:m});save();chosen=null;document.getElementById("customMin").value="";renderGrid();renderAll();alert("운동 기록을 저장했어요! 잘했어요 🩵")};
+function renderCalendar(){let y=calDate.getFullYear(),m=calDate.getMonth();document.getElementById("monthTitle").textContent=`${y}년 ${m+1}월`;let first=new Date(y,m,1),start=first.getDay(),days=new Date(y,m+1,0).getDate();let html=["일","월","화","수","목","금","토"].map(x=>`<div class="dow">${x}</div>`).join("");for(let i=0;i<start;i++)html+='<div></div>';for(let d=1;d<=days;d++){let key=iso(new Date(y,m,d)),items=logs.filter(x=>x.date===key),isToday=key===iso(new Date());html+=`<button class="day ${items.length?"has":""} ${isToday?"today":""}" data-day="${key}">${d}${items.length?`<small>${items.reduce((a,x)=>a+x.minutes,0)}분</small>`:""}</button>`}document.getElementById("calendarGrid").innerHTML=html;document.querySelectorAll("[data-day]").forEach(b=>b.onclick=()=>{selectedDate=b.dataset.day;renderSelected()});renderSelected()}
+function renderSelected(){document.getElementById("selectedDateTitle").textContent=selectedDate+" 기록";let items=logs.filter(x=>x.date===selectedDate);document.getElementById("selectedEntries").className=items.length?"":"empty";document.getElementById("selectedEntries").innerHTML=items.length?items.map(x=>{let e=EX.find(z=>z[0]===x.type);return `<div class="entry"><span>${e[1]} ${e[2]}</span><b>${x.minutes}분</b></div>`}).join(""):"기록이 없어요."}
+function renderStats(){let now=new Date(),prefix=iso(new Date(now.getFullYear(),now.getMonth(),1)).slice(0,7),ml=logs.filter(x=>x.date.startsWith(prefix)),sum=a=>a.reduce((s,x)=>s+x.minutes,0);document.getElementById("monthMinutes").textContent=sum(ml)+"분";document.getElementById("monthDays").textContent=new Set(ml.map(x=>x.date)).size+"일";document.getElementById("monthCount").textContent=ml.length+"회";document.getElementById("allMinutes").textContent=sum(logs)+"분";document.getElementById("typeStats").innerHTML=EX.map(([id,ic,n])=>{let a=ml.filter(x=>x.type===id);return `<div class="entry"><span>${ic} ${n}</span><b>${a.reduce((s,x)=>s+x.minutes,0)}분 · ${a.length}회</b></div>`}).join("")}
+function renderAll(){renderToday();renderCalendar();renderStats()}
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x===b));["today","calendar","stats"].forEach(id=>document.getElementById(id).classList.toggle("hidden",id!==b.dataset.tab));renderAll()});
+document.getElementById("prevMonth").onclick=()=>{calDate.setMonth(calDate.getMonth()-1);renderCalendar()};document.getElementById("nextMonth").onclick=()=>{calDate.setMonth(calDate.getMonth()+1);renderCalendar()};
+document.getElementById("exportBtn").onclick=()=>{let blob=new Blob([JSON.stringify(logs,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="밍이_운동기록_백업.json";a.click();URL.revokeObjectURL(a.href)};
+document.getElementById("importFile").onchange=e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let a=JSON.parse(r.result);if(!Array.isArray(a))throw 0;logs=a;save();renderAll();alert("백업 기록을 불러왔어요.")}catch{alert("올바른 백업 파일이 아니에요.")}};r.readAsText(f)};
+renderGrid();renderAll();
+if("serviceWorker" in navigator && location.protocol.startsWith("http"))navigator.serviceWorker.register("./sw.js").catch(()=>{});
+</script>
+</body></html>
