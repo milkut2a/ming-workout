@@ -89,6 +89,6 @@ document.getElementById("prevMonth").onclick=()=>{calDate.setMonth(calDate.getMo
 document.getElementById("exportBtn").onclick=()=>{let blob=new Blob([JSON.stringify(logs,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="밍이_운동기록_백업.json";a.click();URL.revokeObjectURL(a.href)};
 document.getElementById("importFile").onchange=e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let a=JSON.parse(r.result);if(!Array.isArray(a))throw 0;logs=a;save();renderAll();alert("백업 기록을 불러왔어요.")}catch{alert("올바른 백업 파일이 아니에요.")}};r.readAsText(f)};
 renderGrid();renderAll();
-if("serviceWorker" in navigator && location.protocol.startsWith("http"))navigator.serviceWorker.register("./sw.js").catch(()=>{});
+if("serviceWorker" in navigator && location.protocol.startsWith("http")){let had=!!navigator.serviceWorker.controller,reloaded=false;navigator.serviceWorker.register("./sw.js",{updateViaCache:"none"}).then(r=>r.update()).catch(()=>{});navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!had||reloaded)return;reloaded=true;location.reload()})}
 </script>
 </body></html>
